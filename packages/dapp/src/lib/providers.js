@@ -1,7 +1,7 @@
-import { ethers } from 'ethers';
-import memoize from 'fast-memoize';
-import { LOCAL_STORAGE_KEYS } from 'lib/constants';
-import { getNetworkLabel, getRPCUrl, logError } from 'lib/helpers';
+import { ethers } from "ethers";
+import memoize from "fast-memoize";
+import { FOREIGN_CHAIN, HOME_CHAIN, LOCAL_STORAGE_KEYS } from "lib/constants";
+import { getNetworkLabel, getRPCUrl, logError } from "lib/helpers";
 
 const {
   MAINNET_RPC_URL,
@@ -10,6 +10,8 @@ const {
   SOKOL_RPC_URL,
   POA_RPC_URL,
   XDAI_RPC_URL,
+  HOME_RPC_URL,
+  FOREIGN_RPC_URL,
 } = LOCAL_STORAGE_KEYS;
 
 const RPC_URL = {
@@ -19,15 +21,17 @@ const RPC_URL = {
   77: SOKOL_RPC_URL,
   99: POA_RPC_URL,
   100: XDAI_RPC_URL,
+  [HOME_CHAIN]: HOME_RPC_URL,
+  [FOREIGN_CHAIN]: FOREIGN_RPC_URL,
 };
 
 const NETWORK_TIMEOUT = 1000;
 
 const memoized = memoize(
-  url => new ethers.providers.StaticJsonRpcProvider(url),
+  (url) => new ethers.providers.StaticJsonRpcProvider(url)
 );
 
-const checkRPCHealth = async url => {
+const checkRPCHealth = async (url) => {
   if (!url) return null;
   const tempProvider = memoized(url);
   if (!tempProvider) return null;
@@ -36,8 +40,8 @@ const checkRPCHealth = async url => {
       // eslint-disable-next-line no-underscore-dangle
       tempProvider._networkPromise,
       setTimeout(
-        () => Promise.reject(new Error('Network timeout')).catch(() => null),
-        NETWORK_TIMEOUT,
+        () => Promise.reject(new Error("Network timeout")).catch(() => null),
+        NETWORK_TIMEOUT
       ),
     ]);
     return tempProvider;
@@ -47,7 +51,7 @@ const checkRPCHealth = async url => {
   }
 };
 
-export const getEthersProvider = async chainId => {
+export const getEthersProvider = async (chainId) => {
   const label = getNetworkLabel(chainId).toUpperCase();
   const sessionHealthyURL = `HEALTHY-RPC-URL-${label}`;
   const localRPCUrl = window.localStorage.getItem(RPC_URL[chainId]);
@@ -57,13 +61,13 @@ export const getEthersProvider = async chainId => {
 
   const provider =
     (await checkRPCHealth(sessionStorage.getItem(sessionHealthyURL))) ||
-    (await Promise.all(rpcURLs.map(checkRPCHealth))).filter(p => !!p)[0];
+    (await Promise.all(rpcURLs.map(checkRPCHealth))).filter((p) => !!p)[0];
   sessionStorage.setItem(sessionHealthyURL, provider.connection.url);
   return provider || null;
 };
 
-export const isEIP1193 = ethersProvider =>
+export const isEIP1193 = (ethersProvider) =>
   ethersProvider &&
   ethersProvider.connection &&
   ethersProvider.connection.url &&
-  ethersProvider.connection.url.includes('eip-1193');
+  ethersProvider.connection.url.includes("eip-1193");

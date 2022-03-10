@@ -1,4 +1,4 @@
-import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
+import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import {
   Button,
   Flex,
@@ -7,13 +7,14 @@ import {
   Link,
   Text,
   useToast,
-} from '@chakra-ui/react';
-import RightArrowImage from 'assets/right-arrow.svg';
-import { AddToMetamask } from 'components/common/AddToMetamask';
-import { BigNumber } from 'ethers';
-import { useBridgeDirection } from 'hooks/useBridgeDirection';
-import { useClaim } from 'hooks/useClaim';
-import { isRevertedError, TOKENS_CLAIMED } from 'lib/amb';
+} from "@chakra-ui/react";
+import RightArrowImage from "assets/right-arrow.svg";
+import { AddToMetamask } from "components/common/AddToMetamask";
+import { BigNumber } from "ethers";
+import { useBridgeDirection } from "hooks/useBridgeDirection";
+import { useClaim } from "hooks/useClaim";
+import { isRevertedError, TOKENS_CLAIMED } from "lib/amb";
+import { FOREIGN_CHAIN, HOME_CHAIN } from "lib/constants";
 import {
   formatValue,
   getExplorerUrl,
@@ -21,10 +22,10 @@ import {
   getNativeCurrency,
   handleWalletError,
   logError,
-} from 'lib/helpers';
-import React, { useCallback, useState } from 'react';
+} from "lib/helpers";
+import React, { useCallback, useState } from "react";
 
-const shortenHash = hash =>
+const shortenHash = (hash) =>
   `${hash.slice(0, 6)}...${hash.slice(hash.length - 4, hash.length)}`;
 
 const Tag = ({ bg, txt }) => (
@@ -51,9 +52,11 @@ const networkTags = {
   42: <Tag bg="#5A74DA" txt="Kovan" />,
   77: <Tag bg="#4DA9A6" txt="POA Sokol" />,
   56: <Tag bg="#5A74DA" txt="BSC" />,
+  [HOME_CHAIN]: <Tag bg="#5A74DA" txt="Home" />,
+  [FOREIGN_CHAIN]: <Tag bg="#5A74DA" txt="Foreign" />,
 };
 
-const getNetworkTag = chainId => networkTags[chainId];
+const getNetworkTag = (chainId) => networkTags[chainId];
 
 export const HistoryItem = ({
   data: {
@@ -78,28 +81,28 @@ export const HistoryItem = ({
   const bridgeChainId = getBridgeChainId(chainId);
 
   const timestampString = new Date(
-    parseInt(timestamp, 10) * 1000,
+    parseInt(timestamp, 10) * 1000
   ).toLocaleTimeString([], {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   const toast = useToast();
   const showError = useCallback(
-    msg => {
+    (msg) => {
       if (msg) {
         toast({
-          title: 'Error',
+          title: "Error",
           description: msg,
-          status: 'error',
-          isClosable: 'true',
+          status: "error",
+          isClosable: "true",
         });
       }
     },
-    [toast],
+    [toast]
   );
 
   const { claim, executing, executionTx } = useClaim();
@@ -149,20 +152,20 @@ export const HistoryItem = ({
     >
       <Grid
         templateColumns={{
-          base: '1fr',
-          md: '0.5fr 1.75fr 0.9fr 0.9fr 1fr 0.5fr',
-          lg: '1fr 1.25fr 0.9fr 0.9fr 1fr 0.5fr',
+          base: "1fr",
+          md: "0.5fr 1.75fr 0.9fr 0.9fr 1fr 0.5fr",
+          lg: "1fr 1.25fr 0.9fr 0.9fr 1fr 0.5fr",
         }}
         w="100%"
       >
         <Flex align="center" justify="space-between" mb={{ base: 1, md: 0 }}>
-          <Text display={{ base: 'inline-block', md: 'none' }} color="greyText">
+          <Text display={{ base: "inline-block", md: "none" }} color="greyText">
             Date
           </Text>
           <Text my="auto">{timestampString}</Text>
         </Flex>
         <Flex align="center" justify="space-between" mb={{ base: 1, md: 0 }}>
-          <Text display={{ base: 'inline-block', md: 'none' }} color="greyText">
+          <Text display={{ base: "inline-block", md: "none" }} color="greyText">
             Direction
           </Text>
           <Flex align="center">
@@ -173,10 +176,10 @@ export const HistoryItem = ({
         </Flex>
         <Flex
           align="center"
-          justify={{ base: 'space-between', md: 'center' }}
+          justify={{ base: "space-between", md: "center" }}
           mb={{ base: 1, md: 0 }}
         >
-          <Text display={{ base: 'inline-block', md: 'none' }} color="greyText">
+          <Text display={{ base: "inline-block", md: "none" }} color="greyText">
             Sending Tx
           </Text>
           <Link
@@ -192,10 +195,10 @@ export const HistoryItem = ({
         </Flex>
         <Flex
           align="center"
-          justify={{ base: 'space-between', md: 'center' }}
+          justify={{ base: "space-between", md: "center" }}
           mb={{ base: 1, md: 0 }}
         >
-          <Text display={{ base: 'inline-block', md: 'none' }} color="greyText">
+          <Text display={{ base: "inline-block", md: "none" }} color="greyText">
             Receiving Tx
           </Text>
           {receivingTx ? (
@@ -215,35 +218,35 @@ export const HistoryItem = ({
         </Flex>
         <Flex
           align="center"
-          justify={{ base: 'space-between', md: 'flex-end' }}
+          justify={{ base: "space-between", md: "flex-end" }}
           mb={{ base: 1, md: 0 }}
         >
-          <Text display={{ base: 'inline-block', md: 'none' }} color="greyText">
+          <Text display={{ base: "inline-block", md: "none" }} color="greyText">
             Amount
           </Text>
           <Flex>
             <Text my="auto" textAlign="right">
               {`${formatValue(
                 BigNumber.from(amount),
-                toToken.decimals,
+                toToken.decimals
               )} ${tokenSymbol}`}
             </Text>
             <AddToMetamask token={toToken} ml="0.25rem" />
           </Flex>
         </Flex>
         {claimed ? (
-          <Flex align="center" justify={{ base: 'center', md: 'flex-end' }}>
+          <Flex align="center" justify={{ base: "center", md: "flex-end" }}>
             {failed ? (
               <CloseIcon color="red.500" boxSize="0.75rem" pb="0.1rem" />
             ) : (
               <CheckIcon color="blue.500" boxSize="0.75rem" />
             )}
-            <Text ml="0.25rem" color={failed ? 'red.500' : 'blue.500'}>
-              {failed ? 'Failed' : 'Claimed'}
+            <Text ml="0.25rem" color={failed ? "red.500" : "blue.500"}>
+              {failed ? "Failed" : "Claimed"}
             </Text>
           </Flex>
         ) : (
-          <Flex align="center" justify={{ base: 'center', md: 'flex-end' }}>
+          <Flex align="center" justify={{ base: "center", md: "flex-end" }}>
             <Button
               w="100%"
               size="sm"
